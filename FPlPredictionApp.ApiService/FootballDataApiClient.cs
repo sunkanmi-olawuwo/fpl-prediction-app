@@ -5,18 +5,39 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.IO;
 using System.Text.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace FPlPredictionApp.ApiService;
 
-public class FootballDataApiClient(HttpClient httpClient)
+public class FootballDataApiClient
 {
-    private const string FplApiUrl = "https://fantasy.premierleague.com/api/bootstrap-static/";
-    private const string FplFixturesUrl = "https://fantasy.premierleague.com/api/fixtures/";
-    private const string FplEventLiveUrl = "https://fantasy.premierleague.com/api/event/{0}/live/";
+    private readonly HttpClient _httpClient;
+    private readonly string _fplApiUrl;
+    private readonly string _fplFixturesUrl;
+    private readonly string _fplEventLiveUrl;
+
+    public FootballDataApiClient(HttpClient httpClient, IConfiguration configuration)
+    {
+        _httpClient = httpClient;
+        
+        // Get URLs from configuration or use defaults
+        // Try both direct indexer and GetValue to be compatible with different mocking approaches
+        _fplApiUrl = configuration["FPL_API_URL"] ?? 
+                     configuration.GetSection("FPL_API_URL")?.Value ?? 
+                     "https://fantasy.premierleague.com/api/bootstrap-static/";
+                     
+        _fplFixturesUrl = configuration["FPL_FIXTURES_URL"] ?? 
+                          configuration.GetSection("FPL_FIXTURES_URL")?.Value ?? 
+                          "https://fantasy.premierleague.com/api/fixtures/";
+                          
+        _fplEventLiveUrl = configuration["FPL_EVENT_LIVE_URL"] ?? 
+                           configuration.GetSection("FPL_EVENT_LIVE_URL")?.Value ?? 
+                           "https://fantasy.premierleague.com/api/event/{0}/live/";
+    }
 
     public async Task<FplBootstrapResponse> GetPremierLeagueDataAsync()
     {
-        var response = await httpClient.GetAsync(FplApiUrl);
+        var response = await _httpClient.GetAsync(_fplApiUrl);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<FplBootstrapResponse>();
         return result ?? new FplBootstrapResponse();
@@ -24,7 +45,7 @@ public class FootballDataApiClient(HttpClient httpClient)
 
     public async Task<List<FplFixture>> GetPremierLeagueFixturesAsync()
     {
-        var response = await httpClient.GetAsync(FplFixturesUrl);
+        var response = await _httpClient.GetAsync(_fplFixturesUrl);
         response.EnsureSuccessStatusCode();
         var fixtures = await response.Content.ReadFromJsonAsync<List<FplFixture>>();
         return fixtures ?? new List<FplFixture>();
@@ -32,8 +53,8 @@ public class FootballDataApiClient(HttpClient httpClient)
 
     public async Task<FplEventLiveResponse?> GetEventLiveAsync(int eventId)
     {
-        var url = string.Format(FplEventLiveUrl, eventId);
-        var response = await httpClient.GetAsync(url);
+        var url = string.Format(_fplEventLiveUrl, eventId);
+        var response = await _httpClient.GetAsync(url);
         response.EnsureSuccessStatusCode();
         return await response.Content.ReadFromJsonAsync<FplEventLiveResponse>();
     }

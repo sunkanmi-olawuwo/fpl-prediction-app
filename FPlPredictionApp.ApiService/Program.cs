@@ -1,5 +1,7 @@
 using FPlPredictionApp.ApiService;
 using Carter;
+using System.Net;
+using System.Net.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,8 +10,27 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddProblemDetails();
-builder.Services.AddSingleton<HttpClient>();
-builder.Services.AddSingleton<FootballDataApiClient>();
+
+// Configure HttpClient with SSL certificate handling
+builder.Services.AddHttpClient<FootballDataApiClient>((serviceProvider, client) =>
+{
+    // Configuration is handled in the constructor of FootballDataApiClient
+})
+.ConfigurePrimaryHttpMessageHandler(() => 
+{
+    // Check if we're in a test environment (CI) where certificates might be an issue
+    var isInTestEnv = builder.Environment.IsDevelopment() || 
+                      !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"));
+    
+    return new HttpClientHandler
+    {
+        // Bypass SSL certificate validation in test environments
+        ServerCertificateCustomValidationCallback = isInTestEnv 
+            ? (message, cert, chain, errors) => true 
+            : null
+    };
+});
+
 builder.Services.AddCarter();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

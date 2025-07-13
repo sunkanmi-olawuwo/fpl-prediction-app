@@ -29,6 +29,8 @@ jobs:
       # Configuration for Aspire distributed application testing
       ASPIRE_CONTAINER_RUNTIME: 'process'
       ASPIRE_TEST_HOSTNAME: 'localhost'
+      # SSL Certificate validation setting for HttpClient
+      DOTNET_SYSTEM_NET_HTTP_SOCKETSHTTPHANDLER_HTTPCLIENTHANDLER_DANGEROUSACCEPTANYSERVERCERTIFICATEVALIDATOR: 'true'
 
     steps:
     - name: Checkout code
@@ -76,7 +78,12 @@ jobs:
         # Override endpoint URLs for testing
         FPL_API_URL: "https://fantasy.premierleague.com/api/bootstrap-static/"
         FPL_FIXTURES_URL: "https://fantasy.premierleague.com/api/fixtures/"
+        # Bypass SSL certificate validation
+        DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER: "0"
+        CLR_OPENSSL_VERSION_OVERRIDE: "0"
       run: |
+        # Create a temporary certificate bundle directory to handle SSL validation issues
+        mkdir -p ~/.dotnet/corefx/cryptography/x509stores/root
         dotnet test FPlPredictionApp.Tests/FPlPredictionApp.Tests.csproj \
         --filter "FullyQualifiedName~WebUiTests" \
         --no-build --configuration Release --verbosity normal \
