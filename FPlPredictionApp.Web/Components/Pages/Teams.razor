@@ -15,7 +15,7 @@
 else
 {
     <div class="mb-4">
-        <canvas id="teamStrengthChart" width="100%" height="40"></canvas>
+        <canvas id="teamStrengthChart" width="100" height="40"></canvas>
     </div>
     <div class="row row-cols-1 row-cols-md-3 g-4">
         @foreach (var t in teams)
@@ -37,9 +37,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var data = await ApiClient.GetDataAsync();
+        var data = await ApiClient.GetFplTeamsAsync();
         if (data != null)
-            teams = data.Teams;
+            teams = data;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

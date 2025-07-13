@@ -1,11 +1,5 @@
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
-using System.IO;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 
 namespace FPlPredictionApp.ApiService;
 
@@ -33,6 +27,14 @@ public class FootballDataApiClient
         _fplEventLiveUrl = configuration["FPL_EVENT_LIVE_URL"] ?? 
                            configuration.GetSection("FPL_EVENT_LIVE_URL")?.Value ?? 
                            "https://fantasy.premierleague.com/api/event/{0}/live/";
+    }
+
+    public async Task<IReadOnlyList<FplTeam>> GetPremierLeagueTeamsAsync()
+    {
+        var response = await _httpClient.GetAsync(_fplApiUrl);
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<FplBootstrapResponse>();
+        return result!.Teams;
     }
 
     public async Task<FplBootstrapResponse> GetPremierLeagueDataAsync()
@@ -111,7 +113,6 @@ public class FplPlayerStats
     public int Assists { get; set; }
     [JsonPropertyName("minutes")]
     public int MinutesPlayed { get; set; }
-    // Add more FPL stats as needed
 }
 
 public class FplTeam
@@ -124,7 +125,6 @@ public class FplTeam
     public string ShortName { get; set; } = string.Empty;
     [JsonPropertyName("strength")]
     public int Strength { get; set; }
-    // Add more team properties as needed
 }
 
 public class FplEvent

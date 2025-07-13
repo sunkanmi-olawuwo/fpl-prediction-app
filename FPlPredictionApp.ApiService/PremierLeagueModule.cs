@@ -13,6 +13,13 @@ public class PremierLeagueModule : CarterModule
             await ctx.Response.WriteAsJsonAsync(data);
         });
 
+        app.MapGet("/premierleague/teams", async (HttpContext ctx) =>
+        {
+            var client = ctx.RequestServices.GetRequiredService<FootballDataApiClient>();
+            var data = await client.GetPremierLeagueTeamsAsync();
+            await ctx.Response.WriteAsJsonAsync(data);
+        });
+
         app.MapGet("/premierleague/fixtures", async (HttpContext ctx) =>
         {
             var client = ctx.RequestServices.GetRequiredService<FootballDataApiClient>();

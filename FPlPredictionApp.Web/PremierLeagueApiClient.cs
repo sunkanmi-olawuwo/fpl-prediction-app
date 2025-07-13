@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace FPlPredictionApp.Web;
 
 public class PremierLeagueApiClient(HttpClient httpClient)
@@ -11,6 +13,12 @@ public class PremierLeagueApiClient(HttpClient httpClient)
     {
         var fixtures = await httpClient.GetFromJsonAsync<List<FixtureDto>>("/premierleague/fixtures", cancellationToken);
         return fixtures ?? new List<FixtureDto>();
+    }
+
+    public async Task<List<TeamDto>> GetFplTeamsAsync(CancellationToken cancellationToken = default)
+    {
+        var teams = await httpClient.GetFromJsonAsync<List<TeamDto>>("/premierleague/teams", cancellationToken);
+        return teams ?? [];
     }
 }
 
@@ -37,6 +45,7 @@ public class TeamDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";
+    [JsonPropertyName("short_name")]
     public string ShortName { get; set; } = "";
     public int Strength { get; set; }
 }
