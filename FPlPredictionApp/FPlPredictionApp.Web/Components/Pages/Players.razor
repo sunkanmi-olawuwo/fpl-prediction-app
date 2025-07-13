@@ -1,0 +1,115 @@
+@page "/players"
+@inject PremierLeagueApiClient ApiClient
+@using System.Linq
+@using Microsoft.JSInterop
+
+<PageTitle>Players</PageTitle>
+
+<h1 class="mb-4">Premier League Players</h1>
+
+<div class="row mb-3">
+    <div class="col-md-3 mb-2">
+        <select class="form-select" @bind="selectedTeam">
+            <option value="">All Teams</option>
+            @foreach (var t in teamNames)
+            {
+                <option value="@t.Key">@t.Value</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3 mb-2">
+        <select class="form-select" @bind="selectedPosition">
+            <option value="">All Positions</option>
+            @foreach (var p in positionNames)
+            {
+                <option value="@p.Key">@p.Value</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3 mb-2">
+        <input class="form-control" placeholder="Search by name..." @bind="searchName" />
+    </div>
+</div>
+
+@if (players == null)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height:200px">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+}
+else
+{
+    <div class="mb-4">
+        <canvas id="topScorersChart" width="100%" height="40"></canvas>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Team</th>
+                    <th>Position</th>
+                    <th>Points</th>
+                    <th>Goals</th>
+                    <th>Assists</th>
+                    <th>Minutes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in FilteredPlayers)
+                {
+                    <tr>
+                        <td>@p.WebName</td>
+                        <td>@GetTeamName(p.TeamId)</td>
+                        <td>@GetPositionName(p.PositionId)</td>
+                        <td>@p.TotalPoints</td>
+                        <td>@p.Goals</td>
+                        <td>@p.Assists</td>
+                        <td>@p.MinutesPlayed</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<FPlPredictionApp.Web.PlayerDto>? players;
+    private Dictionary<int, string> teamNames = new();
+    private Dictionary<int, string> positionNames = new() { {1, "Goalkeeper"}, {2, "Defender"}, {3, "Midfielder"}, {4, "Forward"} };
+    private string selectedTeam = "";
+    private string selectedPosition = "";
+    private string searchName = "";
+
+    [Inject] IJSRuntime JS { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await ApiClient.GetDataAsync();
+        if (data != null)
+        {
+            players = data.Elements;
+            foreach (var t in data.Teams)
+                teamNames[t.Id] = t.Name;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && players != null)
+        {
+            await JS.InvokeVoidAsync("renderTopScorersChart", TopScorers.Select(x => x.WebName).ToArray(), TopScorers.Select(x => x.Goals).ToArray());
+        }
+    }
+
+    private IEnumerable<FPlPredictionApp.Web.PlayerDto> FilteredPlayers => players == null ? Enumerable.Empty<FPlPredictionApp.Web.PlayerDto>() : players.Where(p =>
+        (string.IsNullOrEmpty(selectedTeam) || p.TeamId.ToString() == selectedTeam)
+        && (string.IsNullOrEmpty(selectedPosition) || p.PositionId.ToString() == selectedPosition)
+        && (string.IsNullOrEmpty(searchName) || p.WebName.Contains(searchName, StringComparison.OrdinalIgnoreCase))
+    );
+
+    private List<FPlPredictionApp.Web.PlayerDto> TopScorers => players == null ? new() : players.OrderByDescending(x => x.Goals).Take(10).ToList();
+
+    private string GetTeamName(int teamId) => teamNames.TryGetValue(teamId, out var name) ? name : "";
+    private string GetPositionName(int posId) => positionNames.TryGetValue(posId, out var name) ? name : "";
+}

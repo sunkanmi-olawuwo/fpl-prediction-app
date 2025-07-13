@@ -1,0 +1,48 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36221.1 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPlPredictionApp.AppHost", "FPlPredictionApp.AppHost\FPlPredictionApp.AppHost.csproj", "{3C4DC98F-EA74-4EF9-B6A1-E2B0E97272E9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPlPredictionApp.ServiceDefaults", "FPlPredictionApp.ServiceDefaults\FPlPredictionApp.ServiceDefaults.csproj", "{9BDBBB01-D693-6F67-F66F-3ED3A2EB1B12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPlPredictionApp.ApiService", "FPlPredictionApp.ApiService\FPlPredictionApp.ApiService.csproj", "{72E5536A-08C3-C571-210E-531F514F799A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPlPredictionApp.Web", "FPlPredictionApp.Web\FPlPredictionApp.Web.csproj", "{B72B7333-61CE-B3C1-595C-5291E52C57AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPlPredictionApp.Tests", "FPlPredictionApp.Tests\FPlPredictionApp.Tests.csproj", "{7A8C07A7-B4CF-2C0C-C0BF-AA38B1D03ACD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3C4DC98F-EA74-4EF9-B6A1-E2B0E97272E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C4DC98F-EA74-4EF9-B6A1-E2B0E97272E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C4DC98F-EA74-4EF9-B6A1-E2B0E97272E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C4DC98F-EA74-4EF9-B6A1-E2B0E97272E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BDBBB01-D693-6F67-F66F-3ED3A2EB1B12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BDBBB01-D693-6F67-F66F-3ED3A2EB1B12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BDBBB01-D693-6F67-F66F-3ED3A2EB1B12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BDBBB01-D693-6F67-F66F-3ED3A2EB1B12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72E5536A-08C3-C571-210E-531F514F799A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72E5536A-08C3-C571-210E-531F514F799A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72E5536A-08C3-C571-210E-531F514F799A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72E5536A-08C3-C571-210E-531F514F799A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B72B7333-61CE-B3C1-595C-5291E52C57AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B72B7333-61CE-B3C1-595C-5291E52C57AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B72B7333-61CE-B3C1-595C-5291E52C57AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B72B7333-61CE-B3C1-595C-5291E52C57AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A8C07A7-B4CF-2C0C-C0BF-AA38B1D03ACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A8C07A7-B4CF-2C0C-C0BF-AA38B1D03ACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A8C07A7-B4CF-2C0C-C0BF-AA38B1D03ACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A8C07A7-B4CF-2C0C-C0BF-AA38B1D03ACD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {858676CF-D896-4E57-B738-3B1D26E37AE2}
+	EndGlobalSection
+EndGlobal

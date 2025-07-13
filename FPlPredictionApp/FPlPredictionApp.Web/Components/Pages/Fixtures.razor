@@ -1,0 +1,80 @@
+@page "/fixtures"
+@inject PremierLeagueApiClient ApiClient
+@using System.Linq
+
+<PageTitle>Fixtures</PageTitle>
+
+<h1 class="mb-4">Premier League Fixtures</h1>
+
+<div class="row mb-3">
+    <div class="col-md-3 mb-2">
+        <select class="form-select" @bind="selectedGameweek">
+            <option value="">All Gameweeks</option>
+            @foreach (var gw in gameweeks)
+            {
+                <option value="@gw">@gw</option>
+            }
+        </select>
+    </div>
+</div>
+
+@if (fixtures == null)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height:200px">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Gameweek</th>
+                    <th>Home Team</th>
+                    <th>Away Team</th>
+                    <th>Home Score</th>
+                    <th>Away Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var f in FilteredFixtures)
+                {
+                    <tr>
+                        <td>@f.EventId</td>
+                        <td>@GetTeamName(f.HomeTeamId)</td>
+                        <td>@GetTeamName(f.AwayTeamId)</td>
+                        <td>@(f.HomeTeamScore?.ToString() ?? "-")</td>
+                        <td>@(f.AwayTeamScore?.ToString() ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private List<FPlPredictionApp.Web.FixtureDto>? fixtures;
+    private Dictionary<int, string> teamNames = new();
+    private List<int> gameweeks = new();
+    private string selectedGameweek = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await ApiClient.GetDataAsync();
+        if (data != null)
+        {
+            foreach (var t in data.Teams)
+                teamNames[t.Id] = t.Name;
+        }
+        fixtures = await ApiClient.GetFixturesAsync();
+        if (fixtures != null)
+            gameweeks = fixtures.Select(f => f.EventId).Distinct().OrderBy(x => x).ToList();
+    }
+
+    private IEnumerable<FPlPredictionApp.Web.FixtureDto> FilteredFixtures => fixtures == null ? Enumerable.Empty<FPlPredictionApp.Web.FixtureDto>() : fixtures.Where(f =>
+        string.IsNullOrEmpty(selectedGameweek) || f.EventId.ToString() == selectedGameweek
+    );
+
+    private string GetTeamName(int teamId) => teamNames.TryGetValue(teamId, out var name) ? name : "";
+}

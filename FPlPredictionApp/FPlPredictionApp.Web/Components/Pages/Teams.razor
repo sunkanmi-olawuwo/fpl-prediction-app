@@ -1,0 +1,52 @@
+@page "/teams"
+@inject PremierLeagueApiClient ApiClient
+@inject IJSRuntime JS
+
+<PageTitle>Teams</PageTitle>
+
+<h1 class="mb-4">Premier League Teams</h1>
+
+@if (teams == null)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height:200px">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+    </div>
+}
+else
+{
+    <div class="mb-4">
+        <canvas id="teamStrengthChart" width="100%" height="40"></canvas>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        @foreach (var t in teams)
+        {
+            <div class="col">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@t.Name (@t.ShortName)</h5>
+                        <p class="card-text mb-1"><strong>Strength:</strong> @t.Strength</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<FPlPredictionApp.Web.TeamDto>? teams;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var data = await ApiClient.GetDataAsync();
+        if (data != null)
+            teams = data.Teams;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && teams != null)
+        {
+            await JS.InvokeVoidAsync("renderTeamStrengthChart", teams.Select(x => x.Name).ToArray(), teams.Select(x => x.Strength).ToArray());
+        }
+    }
+}

@@ -1,0 +1,101 @@
+name: Build and Test FPlPredictionApp
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      # Redis service container for testing
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DOTNET_VERSION: '9.0.x'
+      ASPNETCORE_ENVIRONMENT: 'Development'
+      DOTNET_STARTUP_HOOKS: ''
+      DOTNET_ADDITIONAL_DEPS: ''
+      # Configuration for Aspire distributed application testing
+      ASPIRE_CONTAINER_RUNTIME: 'process'
+      ASPIRE_TEST_HOSTNAME: 'localhost'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        include-prerelease: true
+        
+    # Cache NuGet packages
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build all projects
+      run: dotnet build --no-restore --configuration Release
+      
+    - name: Build AppHost project
+      run: dotnet build FPlPredictionApp.AppHost/FPlPredictionApp.AppHost.csproj --no-restore --configuration Release
+
+    # Unit tests - bypassing distributed app startup for faster tests
+    - name: Run unit tests
+      run: dotnet test FPlPredictionApp.Tests/FPlPredictionApp.Tests.csproj --filter "FullyQualifiedName~FootballDataApiClientTests" --no-build --configuration Release --verbosity normal
+
+    # Integration tests - requires AppHost
+    - name: Run API integration tests
+      env:
+        REDIS_CONNECTION_STRING: "localhost:6379"
+      run: dotnet test FPlPredictionApp.Tests/FPlPredictionApp.Tests.csproj --filter "FullyQualifiedName~ApiServiceTests" --no-build --configuration Release --verbosity normal
+
+    # UI Tests - Run with specific settings for Aspire hosting in CI
+    - name: Run UI tests
+      env:
+        REDIS_CONNECTION_STRING: "localhost:6379"
+        DOTNET_ENVIRONMENT: "Development"
+        # Override endpoint URLs for testing
+        FPL_API_URL: "https://fantasy.premierleague.com/api/bootstrap-static/"
+        FPL_FIXTURES_URL: "https://fantasy.premierleague.com/api/fixtures/"
+      run: |
+        dotnet test FPlPredictionApp.Tests/FPlPredictionApp.Tests.csproj \
+        --filter "FullyQualifiedName~WebUiTests" \
+        --no-build --configuration Release --verbosity normal \
+        --logger "console;verbosity=detailed"
+
+    - name: Publish API Service
+      run: dotnet publish FPlPredictionApp.ApiService/FPlPredictionApp.ApiService.csproj --configuration Release --output ./publish/api
+
+    - name: Publish Web App
+      run: dotnet publish FPlPredictionApp.Web/FPlPredictionApp.Web.csproj --configuration Release --output ./publish/web
+
+    - name: Upload API artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: api-service
+        path: ./publish/api
+
+    - name: Upload Web artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: web-app
+        path: ./publish/web
